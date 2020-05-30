@@ -22,11 +22,19 @@ app.get('/parking', (req, res) => {
     var data = req.param("data")
 
 
-    if (client_id === undefined || client_id === null || client_secret === undefined || client_secret === null || data === undefined || data === null) {
+    if (client_id === undefined ||client_id==='' || client_id === null || client_secret === undefined || client_secret === null || client_secret==='' || data === undefined || data === null || data==='')  {
         res.send('Enter all parameters')
 
     }
     else {
+
+        try {
+            JSON.parse(data);
+        } catch (e) {
+            res.send("Invalid JSON")
+            return false;
+        }
+
         //Generating Access Token
         axios.get(process.env.authorize, {
             params: {
@@ -83,6 +91,37 @@ app.get('/parking', (req, res) => {
     }
 })
 
+
+app.get('/digest',(req,res)=>{
+
+    // Generating Digest Value
+    const data =req.param("data")
+    const client_secret=req.param("client_secret")
+
+    if(data === null || data === undefined || client_secret === ''|| client_secret === null || client_secret === undefined )
+    {
+        res.send("Enter all parameters")
+    }
+    else{
+
+            try {
+                JSON.parse(data);
+            } catch (e) {
+                res.send("Invalid JSON")
+                return false;
+            }
+   
+    var obj = JSON.parse(data)
+    var obj1 = JSON.stringify(obj)
+
+    
+    const hmac = crypto.createHmac('sha1',client_secret )
+    hmac.update(obj1, 'utf-8')
+    const digest = hmac.digest('hex')
+    res.send("Digest value is "+digest)
+    }
+
+})
 
 
 app.listen(port, () => {
